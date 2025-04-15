@@ -1,89 +1,90 @@
-let arr = [];
-const container = document.getElementById('array-container');
-const statusText = document.getElementById('status');
-
-function displayArray(current, highlight = []) {
-  container.innerHTML = '';
-  current.forEach((val, i) => {
-    const bar = document.createElement('div');
-    bar.classList.add('bar');
-    bar.textContent = val;
-    if (highlight[i]) {
-      bar.classList.add(highlight[i]);
-    }
-    container.appendChild(bar);
-  });
-}
+const visualization = document.getElementById("visualization");
+const explanation = document.getElementById("explanation");
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function mergeSort(start, end) {
-  if (start >= end) return;
-
-  const mid = Math.floor((start + end) / 2);
-
-  // Divide Step
-  statusText.innerText = `Dividing: [${arr.slice(start, mid + 1)}] and [${arr.slice(mid + 1, end + 1)}]`;
-  let highlight = arr.map((_, i) => (i >= start && i <= end ? 'divide' : ''));
-  displayArray([...arr], highlight);
-  await sleep(800);
-
-  await mergeSort(start, mid);
-  await mergeSort(mid + 1, end);
-  await merge(start, mid, end);
+function createTreeLevel(groups) {
+  const level = document.createElement("div");
+  level.className = "level";
+  groups.forEach(group => {
+    const box = document.createElement("div");
+    box.className = "box";
+    box.textContent = group.join(", ");
+    level.appendChild(box);
+  });
+  visualization.appendChild(level);
 }
 
-async function merge(start, mid, end) {
-  let left = arr.slice(start, mid + 1);
-  let right = arr.slice(mid + 1, end + 1);
+function buildLevels(inputArr) {
+  let levels = [];
+  let current = [inputArr];
 
-  let i = 0, j = 0, k = start;
-
-  while (i < left.length && j < right.length) {
-    if (left[i] <= right[j]) {
-      arr[k++] = left[i++];
-    } else {
-      arr[k++] = right[j++];
+  
+  while (current.every(arr => arr.length === 1) === false) {
+    levels.push(current);
+    let next = [];
+    for (let arr of current) {
+      if (arr.length <= 1) {
+        next.push(arr);
+        continue;
+      }
+      let mid = Math.floor(arr.length / 2);
+      next.push(arr.slice(0, mid));
+      next.push(arr.slice(mid));
     }
-    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
-    statusText.innerText = `Merging: [${left}] and [${right}] → [${arr.slice(start, k)}]`;
-    await sleep(500);
+    current = next;
+  }
+  levels.push(current); 
+
+  
+  while (current.length > 1) {
+    let next = [];
+    for (let i = 0; i < current.length; i += 2) {
+      if (i + 1 < current.length) {
+        const merged = merge(current[i], current[i + 1]);
+        next.push(merged);
+      } else {
+        next.push(current[i]); 
+      }
+    }
+    levels.push(next);
+    current = next;
   }
 
-  while (i < left.length) {
-    arr[k++] = left[i++];
-    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
-    await sleep(300);
-  }
-
-  while (j < right.length) {
-    arr[k++] = right[j++];
-    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
-    await sleep(300);
-  }
-
-  statusText.innerText = `Merged: [${arr.slice(start, end + 1)}]`;
-  await sleep(500);
+  return levels;
 }
 
-async function handleUserInput() {
-  const input = document.getElementById('user-input').value;
-  if (!input.trim()) return;
+function merge(left, right) {
+  let result = [];
+  let i = 0, j = 0;
+  while (i < left.length && j < right.length) {
+    if (left[i] < right[j]) result.push(left[i++]);
+    else result.push(right[j++]);
+  }
+  return result.concat(left.slice(i)).concat(right.slice(j));
+}
 
-  arr = input.split(',').map(Number).filter(num => !isNaN(num));
-  if (arr.length === 0) {
-    alert("Please enter a valid comma-separated number list.");
+async function startSort() {
+  visualization.innerHTML = "";
+  explanation.textContent = "";
+
+  const input = document.getElementById("userInput").value;
+  const numbers = input.split(",").map(x => parseInt(x)).filter(x => !isNaN(x));
+
+  if (numbers.length < 2) {
+    alert("Enter at least 2 numbers, separated by commas.");
     return;
   }
 
-  statusText.innerText = "Starting Merge Sort...";
-  displayArray([...arr]);
-  await sleep(1000);
+  explanation.textContent = `Building merge sort tree for: [${numbers}]`;
 
-  await mergeSort(0, arr.length - 1);
+  const allLevels = buildLevels(numbers);
+  for (let i = 0; i < allLevels.length; i++) {
+    await sleep(1500);
+    createTreeLevel(allLevels[i]);
+  }
 
-  statusText.innerText = `Sorted Array: [${arr.join(', ')}]`;
-  displayArray([...arr]);
+  explanation.textContent = `Final Sorted Array: [${numbers.sort((a, b) => a - b)}]`;
 }
