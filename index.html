@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Merge Sort Visualizer</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <title>Merge Sort Tree Visualizer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Merge Sort Visualizer</h1>
-
-    <input type="text" id="user-input" placeholder="Enter numbers (e.g. 5, 3, 8, 1)">
-    <button onclick="handleUserInput()">Visualize</button>
-
-    <div id="status"></div>
-    <div id="array-container"></div>
+    <h1> Merge Sort Visualizer</h1>
+    <input type="text" id="userInput" placeholder="Enter numbers like 4, 2, 7, 1">
+    <button onclick="startSort()">Visualize</button>
+    <div id="explanation"></div>
+    <div id="visualization"></div>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>

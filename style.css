@@ -1,79 +1,83 @@
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #e0f7fa, #ffffff);
+    background: #f0faff;
     margin: 0;
-    padding: 20px;
-  }
-  
-  .container {
-    max-width: 900px;
-    margin: auto;
+    padding: 0;
     text-align: center;
   }
   
-  h1 {
-    color: #2c3e50;
+  .container {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: auto;
   }
   
-  input[type="text"] {
+  h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  input {
+    padding: 12px;
     width: 60%;
-    padding: 10px;
     font-size: 16px;
-    margin-top: 20px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    outline: none;
+    border: 2px solid #aaa;
+    border-radius: 10px;
+    margin-bottom: 20px;
   }
   
   button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
-    margin-left: 10px;
-    border: none;
-    border-radius: 8px;
     background-color: #3498db;
     color: white;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    margin-left: 10px;
   }
   
-  button:hover {
-    background-color: #2980b9;
+  #explanation {
+    font-size: 18px;
+    margin: 30px 0;
+    color: #2c3e50;
+    font-weight: bold;
+    min-height: 24px;
   }
   
-  #array-container {
+  #visualization {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+  
+  .level {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    margin-top: 30px;
-    min-height: 50px;
+    gap: 20px;
   }
   
-  .bar {
-    width: 40px;
-    height: 40px;
-    margin: 5px;
-    background: #3498db;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    font-weight: bold;
-    transition: 0.3s ease;
-  }
-  
-  .bar.divide {
-    background-color: #f39c12;
-  }
-  
-  .bar.merge {
-    background-color: #2ecc71;
-  }
-  
-  #status {
+  .box {
+    padding: 12px 18px;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     font-size: 18px;
-    margin-top: 20px;
-    color: #2c3e50;
+    min-width: 60px;
+    transition: transform 0.3s;
+  }
+  
+  .box.highlight {
+    background-color: #f39c12;
+    color: white;
+    transform: scale(1.1);
+  }
+  
+  .box.merged {
+    background-color: #2ecc71;
+    color: white;
   }
   
