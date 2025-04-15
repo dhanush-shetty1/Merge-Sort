@@ -9,9 +9,12 @@
 <body>
   <div class="container">
     <h1>Merge Sort Visualizer</h1>
-    <div id="array-container"></div>
-    <button onclick="startMergeSort()">Start Merge Sort</button>
+
+    <input type="text" id="user-input" placeholder="Enter numbers (e.g. 5, 3, 8, 1)">
+    <button onclick="handleUserInput()">Visualize</button>
+
     <div id="status"></div>
+    <div id="array-container"></div>
   </div>
 
   <script src="script.js"></script>

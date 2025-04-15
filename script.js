@@ -1,10 +1,10 @@
-const array = [38, 27, 43, 3, 9, 82, 10];
+let arr = [];
 const container = document.getElementById('array-container');
-const status = document.getElementById('status');
+const statusText = document.getElementById('status');
 
-function displayArray(arr, highlight = []) {
+function displayArray(current, highlight = []) {
   container.innerHTML = '';
-  arr.forEach((val, i) => {
+  current.forEach((val, i) => {
     const bar = document.createElement('div');
     bar.classList.add('bar');
     bar.textContent = val;
@@ -15,66 +15,75 @@ function displayArray(arr, highlight = []) {
   });
 }
 
-async function sleep(ms) {
+function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function mergeSort(arr, left, right) {
-  if (left >= right) return;
+async function mergeSort(start, end) {
+  if (start >= end) return;
 
-  const mid = Math.floor((left + right) / 2);
-  await mergeSort(arr, left, mid);
-  await mergeSort(arr, mid + 1, right);
-  await merge(arr, left, mid, right);
+  const mid = Math.floor((start + end) / 2);
+
+  // Divide Step
+  statusText.innerText = `Dividing: [${arr.slice(start, mid + 1)}] and [${arr.slice(mid + 1, end + 1)}]`;
+  let highlight = arr.map((_, i) => (i >= start && i <= end ? 'divide' : ''));
+  displayArray([...arr], highlight);
+  await sleep(800);
+
+  await mergeSort(start, mid);
+  await mergeSort(mid + 1, end);
+  await merge(start, mid, end);
 }
 
-async function merge(arr, left, mid, right) {
-  let leftPart = arr.slice(left, mid + 1);
-  let rightPart = arr.slice(mid + 1, right + 1);
+async function merge(start, mid, end) {
+  let left = arr.slice(start, mid + 1);
+  let right = arr.slice(mid + 1, end + 1);
 
-  // Show split
-  let tempArray = [...arr];
-  for (let i = left; i <= right; i++) tempArray[i] = '';
-  displayArray(tempArray.map((v, i) => v === '' ? (leftPart[i - left] || rightPart[i - mid - 1] || '') : v),
-               tempArray.map((v, i) => i >= left && i <= right ? 'split' : ''));
-  status.innerText = `Dividing: ${leftPart} and ${rightPart}`;
-  await sleep(1000);
+  let i = 0, j = 0, k = start;
 
-  let i = 0, j = 0, k = left;
-
-  while (i < leftPart.length && j < rightPart.length) {
-    if (leftPart[i] <= rightPart[j]) {
-      arr[k++] = leftPart[i++];
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) {
+      arr[k++] = left[i++];
     } else {
-      arr[k++] = rightPart[j++];
+      arr[k++] = right[j++];
     }
-    displayArray([...arr], arr.map((_, idx) => idx >= left && idx <= right ? 'merge' : ''));
+    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
+    statusText.innerText = `Merging: [${left}] and [${right}] → [${arr.slice(start, k)}]`;
+    await sleep(500);
+  }
+
+  while (i < left.length) {
+    arr[k++] = left[i++];
+    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
     await sleep(300);
   }
 
-  while (i < leftPart.length) {
-    arr[k++] = leftPart[i++];
-    displayArray([...arr], arr.map((_, idx) => idx >= left && idx <= right ? 'merge' : ''));
+  while (j < right.length) {
+    arr[k++] = right[j++];
+    displayArray([...arr], arr.map((_, idx) => idx >= start && idx <= end ? 'merge' : ''));
     await sleep(300);
   }
 
-  while (j < rightPart.length) {
-    arr[k++] = rightPart[j++];
-    displayArray([...arr], arr.map((_, idx) => idx >= left && idx <= right ? 'merge' : ''));
-    await sleep(300);
-  }
-
-  status.innerText = `Merged: ${arr.slice(left, right + 1)}`;
+  statusText.innerText = `Merged: [${arr.slice(start, end + 1)}]`;
   await sleep(500);
 }
 
-async function startMergeSort() {
-  status.innerText = "Initial Array Inserted!";
-  displayArray([...array]);
-  await sleep(1500);
+async function handleUserInput() {
+  const input = document.getElementById('user-input').value;
+  if (!input.trim()) return;
 
-  await mergeSort(array, 0, array.length - 1);
+  arr = input.split(',').map(Number).filter(num => !isNaN(num));
+  if (arr.length === 0) {
+    alert("Please enter a valid comma-separated number list.");
+    return;
+  }
 
-  status.innerText = "Sorted Array!";
-  displayArray(array);
+  statusText.innerText = "Starting Merge Sort...";
+  displayArray([...arr]);
+  await sleep(1000);
+
+  await mergeSort(0, arr.length - 1);
+
+  statusText.innerText = `Sorted Array: [${arr.join(', ')}]`;
+  displayArray([...arr]);
 }
