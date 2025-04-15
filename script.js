@@ -2,89 +2,156 @@ const visualization = document.getElementById("visualization");
 const explanation = document.getElementById("explanation");
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function createTreeLevel(groups) {
-  const level = document.createElement("div");
-  level.className = "level";
-  groups.forEach(group => {
-    const box = document.createElement("div");
-    box.className = "box";
-    box.textContent = group.join(", ");
-    level.appendChild(box);
-  });
-  visualization.appendChild(level);
-}
-
-function buildLevels(inputArr) {
-  let levels = [];
-  let current = [inputArr];
-
-  
-  while (current.every(arr => arr.length === 1) === false) {
-    levels.push(current);
-    let next = [];
-    for (let arr of current) {
-      if (arr.length <= 1) {
-        next.push(arr);
-        continue;
-      }
-      let mid = Math.floor(arr.length / 2);
-      next.push(arr.slice(0, mid));
-      next.push(arr.slice(mid));
+class MergeSortVisualizer {
+    constructor() {
+        this.animationSpeed = 800;
     }
-    current = next;
-  }
-  levels.push(current); 
 
-  
-  while (current.length > 1) {
-    let next = [];
-    for (let i = 0; i < current.length; i += 2) {
-      if (i + 1 < current.length) {
-        const merged = merge(current[i], current[i + 1]);
-        next.push(merged);
-      } else {
-        next.push(current[i]); 
-      }
+    async startSort() {
+        const input = document.getElementById("userInput").value;
+        const numbers = input.split(",")
+                           .map(x => parseInt(x.trim()))
+                           .filter(x => !isNaN(x));
+        
+        if (numbers.length < 2) {
+            explanation.textContent = "Enter at least 2 numbers separated by commas";
+            return;
+        }
+
+        visualization.innerHTML = "";
+        explanation.textContent = `Starting merge sort on: [${numbers.join(", ")}]`;
+        await sleep(this.animationSpeed);
+
+        await this.visualizeMergeSort(numbers);
     }
-    levels.push(next);
-    current = next;
-  }
 
-  return levels;
+    async visualizeMergeSort(array, level = 0, position = 0, parentId = null) {
+        // Create node container
+        const nodeId = `node-${level}-${position}`;
+        this.createNode(array, level, position, parentId, nodeId);
+        
+        // Base case
+        if (array.length <= 1) {
+            document.getElementById(nodeId).classList.add("leaf");
+            await sleep(this.animationSpeed);
+            return { array, nodeId };
+        }
+
+        // Divide phase
+        explanation.textContent = `Dividing: [${array.join(", ")}]`;
+        document.getElementById(nodeId).classList.add("dividing");
+        await sleep(this.animationSpeed);
+
+        const mid = Math.floor(array.length / 2);
+        const leftArr = array.slice(0, mid);
+        const rightArr = array.slice(mid);
+
+        // Recursively sort halves
+        const left = await this.visualizeMergeSort(leftArr, level + 1, position * 2, nodeId);
+        const right = await this.visualizeMergeSort(rightArr, level + 1, position * 2 + 1, nodeId);
+
+        // Merge phase
+        explanation.textContent = `Merging: [${left.array.join(", ")}] and [${right.array.join(", ")}]`;
+        document.getElementById(nodeId).classList.remove("dividing");
+        document.getElementById(nodeId).classList.add("merging");
+        await sleep(this.animationSpeed);
+
+        const merged = await this.merge(left.array, right.array, left.nodeId, right.nodeId);
+        
+        // Update node with merged result
+        const node = document.getElementById(nodeId);
+        node.querySelector(".array-value").textContent = `[${merged.join(", ")}]`;
+        node.classList.remove("merging");
+        node.classList.add("merged");
+        
+        explanation.textContent = `Merged into: [${merged.join(", ")}]`;
+        await sleep(this.animationSpeed);
+
+        return { array: merged, nodeId };
+    }
+
+    async merge(left, right, leftId, rightId) {
+        let result = [];
+        let i = 0, j = 0;
+
+        // Highlight the two arrays being merged
+        if (leftId) document.getElementById(leftId).classList.add("highlight");
+        if (rightId) document.getElementById(rightId).classList.add("highlight");
+        await sleep(this.animationSpeed);
+
+        while (i < left.length && j < right.length) {
+            if (left[i] < right[j]) {
+                result.push(left[i++]);
+            } else {
+                result.push(right[j++]);
+            }
+            explanation.textContent = `Comparing ${left[i-1]} and ${right[j-1]}`;
+            await sleep(this.animationSpeed/2);
+        }
+
+        // Add remaining elements
+        result = result.concat(left.slice(i)).concat(right.slice(j));
+
+        // Remove highlights
+        if (leftId) document.getElementById(leftId).classList.remove("highlight");
+        if (rightId) document.getElementById(rightId).classList.remove("highlight");
+
+        return result;
+    }
+
+    createNode(array, level, position, parentId, nodeId) {
+        // Create tree if it doesn't exist
+        if (!visualization.querySelector(".tree")) {
+            visualization.innerHTML = '<div class="tree"></div>';
+        }
+
+        // Get or create level container
+        let levelContainer = visualization.querySelector(`.level-${level}`);
+        if (!levelContainer) {
+            levelContainer = document.createElement("div");
+            levelContainer.className = `level level-${level}`;
+            visualization.querySelector(".tree").appendChild(levelContainer);
+        }
+
+        // Create node element
+        const node = document.createElement("div");
+        node.className = "node";
+        node.id = nodeId;
+
+        // Add array value
+        const value = document.createElement("div");
+        value.className = "array-value";
+        value.textContent = array.length > 1 ? `[${array.join(", ")}]` : array[0];
+        node.appendChild(value);
+
+        // Add to level container
+        levelContainer.appendChild(node);
+
+        // Create connectors if this isn't the root node
+        if (parentId) {
+            this.createConnector(parentId, nodeId);
+        }
+    }
+
+    createConnector(parentId, childId) {
+        const parent = document.getElementById(parentId);
+        const child = document.getElementById(childId);
+
+        if (parent && child) {
+            const connector = document.createElement("div");
+            connector.className = "connector";
+            parent.appendChild(connector);
+        }
+    }
 }
 
-function merge(left, right) {
-  let result = [];
-  let i = 0, j = 0;
-  while (i < left.length && j < right.length) {
-    if (left[i] < right[j]) result.push(left[i++]);
-    else result.push(right[j++]);
-  }
-  return result.concat(left.slice(i)).concat(right.slice(j));
-}
+// Initialize visualizer
+const visualizer = new MergeSortVisualizer();
 
-async function startSort() {
-  visualization.innerHTML = "";
-  explanation.textContent = "";
-
-  const input = document.getElementById("userInput").value;
-  const numbers = input.split(",").map(x => parseInt(x)).filter(x => !isNaN(x));
-
-  if (numbers.length < 2) {
-    alert("Enter at least 2 numbers, separated by commas.");
-    return;
-  }
-
-  explanation.textContent = `Building merge sort tree for: [${numbers}]`;
-
-  const allLevels = buildLevels(numbers);
-  for (let i = 0; i < allLevels.length; i++) {
-    await sleep(1500);
-    createTreeLevel(allLevels[i]);
-  }
-
-  explanation.textContent = `Final Sorted Array: [${numbers.sort((a, b) => a - b)}]`;
+// Start sort when button clicked
+function startSort() {
+    visualizer.startSort();
 }

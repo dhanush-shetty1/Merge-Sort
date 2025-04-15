@@ -1,83 +1,125 @@
+:root {
+  --primary: #00ff9d;
+  --secondary: #00b8ff;
+  --dark: #0a0a0a;
+  --darker: #050505;
+  --light: #e0e0e0;
+  --divide: #ff5555;
+  --merge: #00ff9d;
+  --highlight: #ffeb3b;
+}
+
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f0faff;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-  }
-  
-  .container {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: auto;
-  }
-  
-  h1 {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 20px;
-  }
-  
-  input {
-    padding: 12px;
-    width: 60%;
-    font-size: 16px;
-    border: 2px solid #aaa;
-    border-radius: 10px;
-    margin-bottom: 20px;
-  }
-  
-  button {
-    padding: 12px 24px;
-    font-size: 16px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  
-  #explanation {
-    font-size: 18px;
-    margin: 30px 0;
-    color: #2c3e50;
-    font-weight: bold;
-    min-height: 24px;
-  }
-  
-  #visualization {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
-  }
-  
-  .level {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-  }
-  
-  .box {
-    padding: 12px 18px;
-    background-color: #ecf0f1;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    font-size: 18px;
-    min-width: 60px;
-    transition: transform 0.3s;
-  }
-  
-  .box.highlight {
-    background-color: #f39c12;
-    color: white;
-    transform: scale(1.1);
-  }
-  
-  .box.merged {
-    background-color: #2ecc71;
-    color: white;
-  }
-  
+  font-family: 'JetBrains Mono', monospace;
+  background-color: var(--dark);
+  color: var(--light);
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 10px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--primary);
+  color: white;
+  margin-right: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: var(--dark);
+  border: none;
+  cursor: pointer;
+}
+
+#explanation {
+  margin: 20px 0;
+  padding: 10px;
+  background: rgba(0,0,0,0.3);
+  border-left: 3px solid var(--primary);
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.level {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.array-value {
+  padding: 10px 15px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(0,255,157,0.2);
+  border-radius: 4px;
+  min-width: 50px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.connector {
+  width: 2px;
+  height: 30px;
+  background: rgba(255,255,255,0.2);
+  position: relative;
+}
+
+.connector::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: rgba(255,255,255,0.2);
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* States */
+.dividing {
+  border-color: var(--divide) !important;
+  color: var(--divide) !important;
+}
+
+.merging {
+  border-color: var(--merge) !important;
+  color: var(--merge) !important;
+}
+
+.merged {
+  background: rgba(0,255,157,0.1) !important;
+}
+
+.highlight {
+  background: rgba(255,235,59,0.2) !important;
+  border-color: var(--highlight) !important;
+}
+
+.leaf {
+  border-color: var(--secondary) !important;
+  color: var(--secondary) !important;
+}
