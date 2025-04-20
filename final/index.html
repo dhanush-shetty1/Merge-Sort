@@ -455,7 +455,7 @@
         }
 
         function generateRandomArray() {
-            const size = Math.floor(Math.random() * 9) + 4; // 4 to 12 elements
+            const size = Math.floor(Math.random() * 9) + 4; 
             array = Array.from({length: size}, () => Math.floor(Math.random() * 50) + 1);
             arrayInput.value = array.join(',');
             resetVisualization();
@@ -470,15 +470,15 @@
             startBtn.disabled = false;
             startBtn.textContent = "Start Sorting";
             
-            // Clear visualizations
+            
             arrayVisualization.innerHTML = '';
             treeVisualization.innerHTML = '';
             
-            // Reset data structures
+            
             treeNodes = [];
             treeEdges = [];
             
-            // Re-render initial state
+            
             renderArray(array);
             createTreeStructure(array, 0, array.length - 1, null, 0);
             renderTree();
@@ -497,7 +497,7 @@
                     bar.classList.add('highlight');
                 }
                 
-                const height = (value / maxValue) * 80 + 20; // 20px minimum height
+                const height = (value / maxValue) * 80 + 20; 
                 bar.style.height = `${height}px`;
                 bar.textContent = value;
                 
@@ -512,7 +512,7 @@
             const nodeId = `node-${level}-${start}-${end}`;
             const nodeValues = arr.slice(start, end + 1);
             
-            // Create node
+            
             treeNodes.push({
                 id: nodeId,
                 values: nodeValues,
@@ -520,11 +520,11 @@
                 start: start,
                 end: end,
                 mid: mid,
-                x: 0, // Will be calculated during rendering
+                x: 0, 
                 y: level * 80 + 20
             });
             
-            // Create edge to parent
+            
             if (parentId) {
                 treeEdges.push({
                     from: parentId,
@@ -532,7 +532,7 @@
                 });
             }
             
-            // Create children
+            
             if (start < end) {
                 createTreeStructure(arr, start, mid, nodeId, level + 1);
                 createTreeStructure(arr, mid + 1, end, nodeId, level + 1);
@@ -544,11 +544,11 @@
         function renderTree() {
             treeVisualization.innerHTML = '';
             
-            // Calculate x positions based on tree structure
+            
             const levelWidths = {};
             const levelNodes = {};
             
-            // Group nodes by level
+            
             treeNodes.forEach(node => {
                 if (!levelNodes[node.level]) {
                     levelNodes[node.level] = [];
@@ -556,11 +556,11 @@
                 levelNodes[node.level].push(node);
             });
             
-            // Calculate width for each level
+            
             const maxLevel = Math.max(...Object.keys(levelNodes).map(Number));
             const containerWidth = treeVisualization.clientWidth;
             
-            // Set x positions
+            
             for (let level = 0; level <= maxLevel; level++) {
                 const nodesAtLevel = levelNodes[level];
                 const spacing = containerWidth / (nodesAtLevel.length + 1);
@@ -570,7 +570,7 @@
                 });
             }
             
-            // Render edges first (so they appear behind nodes)
+            
             treeEdges.forEach(edge => {
                 const fromNode = treeNodes.find(node => node.id === edge.from);
                 const toNode = treeNodes.find(node => node.id === edge.to);
@@ -580,7 +580,7 @@
                     edgeElement.className = 'tree-edge';
                     edgeElement.id = `edge-${fromNode.id}-${toNode.id}`;
                     
-                    // Calculate edge position and rotation
+                    
                     const dx = toNode.x - fromNode.x;
                     const dy = toNode.y - fromNode.y;
                     const length = Math.sqrt(dx * dx + dy * dy);
@@ -595,7 +595,7 @@
                 }
             });
             
-            // Render nodes
+            
             treeNodes.forEach(node => {
                 const nodeElement = document.createElement('div');
                 nodeElement.className = 'tree-node';
@@ -605,7 +605,7 @@
                 nodeElement.style.left = `${node.x - 40}px`;
                 nodeElement.style.top = `${node.y}px`;
                 
-                // Apply active class if this node is in the activeNodes array
+                
                 if (activeNodes.includes(node.id)) {
                     nodeElement.classList.add('active');
                 }
@@ -621,41 +621,40 @@
             startBtn.disabled = true;
             startBtn.textContent = "Sorting...";
             
-            // Create a copy of the array for sorting
+           
             const arrayCopy = [...array];
             
-            // Generate all the steps for the animation
             animationQueue = [];
             await mergeSort(arrayCopy, 0, arrayCopy.length - 1);
             
-            // Start the animation
+            
             runAnimationQueue();
         }
 
         async function mergeSort(arr, start, end) {
-            // Base case: array of length 1 is already sorted
+            
             if (start >= end) return;
             
             const mid = Math.floor((start + end) / 2);
             const nodeId = findNodeId(start, end);
             
-            // Highlight current node
+            
             animationQueue.push({
                 type: 'highlightNode',
                 nodeId: nodeId,
                 description: `Dividing array [${arr.slice(start, end + 1).join(', ')}] at index ${mid}`
             });
             
-            // Recursively sort left half
+            
             await mergeSort(arr, start, mid);
             
-            // Recursively sort right half
+            
             await mergeSort(arr, mid + 1, end);
             
-            // Merge the sorted halves
+            
             await merge(arr, start, mid, end);
             
-            // Update the node with sorted values
+            
             animationQueue.push({
                 type: 'updateNode',
                 nodeId: nodeId,
@@ -663,7 +662,7 @@
                 description: `Merged subarrays into [${arr.slice(start, end + 1).join(', ')}]`
             });
             
-            // Mark this node as merge complete
+            
             animationQueue.push({
                 type: 'markMergeComplete',
                 nodeId: nodeId
@@ -704,7 +703,7 @@
                 k++;
             }
             
-            // Copy remaining elements
+            
             while (i < leftArray.length) {
                 highlightIndices.length = 0;
                 highlightIndices.push(k);
@@ -758,13 +757,13 @@
             
             switch (step.type) {
                 case 'highlightNode':
-                    // Add this node to the active nodes
+                    
                     activeNodes.push(step.nodeId);
                     renderTree();
                     break;
                     
                 case 'updateNode':
-                    // Update the node's values in the treeNodes array
+                    
                     const nodeIndex = treeNodes.findIndex(node => node.id === step.nodeId);
                     if (nodeIndex !== -1) {
                         treeNodes[nodeIndex].values = step.values;
@@ -773,19 +772,19 @@
                     break;
                     
                 case 'markMergeComplete':
-                    // Remove this node from activeNodes and add to merge complete
+                    
                     const activeIndex = activeNodes.indexOf(step.nodeId);
                     if (activeIndex !== -1) {
                         activeNodes.splice(activeIndex, 1);
                     }
                     
-                    // Add merge-complete class to the node
+                    
                     const node = document.getElementById(step.nodeId);
                     if (node) {
                         node.classList.remove('active');
                         node.classList.add('merge-complete');
                         
-                        // Also mark edges to this node as complete
+                        
                         treeEdges.forEach(edge => {
                             if (edge.to === step.nodeId) {
                                 const edgeElement = document.getElementById(`edge-${edge.from}-${edge.to}`);
@@ -803,22 +802,22 @@
                     break;
                     
                 case 'description':
-                    // Only update description
+                    
                     break;
             }
             
-            // Update step description
+            
             if (step.description) {
                 stepDescription.textContent = step.description;
             }
             
-            // Schedule next animation
+            
             animationTimeout = setTimeout(() => {
                 runAnimationQueue();
             }, animationSpeed);
         }
 
-        // Initialize on load
+        
         window.addEventListener('load', init);
         window.addEventListener('resize', renderTree);
     </script>
