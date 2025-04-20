@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualization</title>
+    <style>
+        :root {
+            --bg-color: #0f0f1a;
+            --text-color: #e0e0ff;
+            --accent-color: #00ffaa;
+            --secondary-accent: #ff00aa;
+            --tertiary-accent: #aa00ff;
+            --container-bg: rgba(30, 30, 50, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 170, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 170, 0.15) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+
+        header {
+            width: 100%;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: var(--container-bg);
+            border-bottom: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
+        }
+
+        button:hover {
+            background: rgba(0, 255, 170, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        input {
+            background: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.6rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            max-width: 300px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 100px;
+            align-items: flex-end;
+            padding: 1rem;
+            background: var(--container-bg);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .array-bar {
+            background: linear-gradient(to top, var(--accent-color), var(--secondary-accent));
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease, background 0.3s ease;
+            min-width: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 5px;
+            color: var(--bg-color);
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+        }
+
+        .array-bar.highlight {
+            background: linear-gradient(to top, var(--tertiary-accent), var(--secondary-accent));
+            box-shadow: 0 0 15px rgba(170, 0, 255, 0.5);
+        }
+
+        .tree-container {
+            width: 100%;
+            overflow-x: auto;
+            padding: 1rem;
+            background: var(--container-bg);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #tree-visualization {
+            min-height: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        .tree-node {
+            position: absolute;
+            background: var(--container-bg);
+            border: 1px solid var(--accent-color);
+            border-radius: 5px;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .tree-node.active {
+            border-color: var(--tertiary-accent);
+            box-shadow: 0 0 15px rgba(170, 0, 255, 0.5);
+            background: rgba(170, 0, 255, 0.2);
+        }
+
+        .tree-node.merge-complete {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.5);
+            background: rgba(0, 255, 170, 0.2);
+        }
+
+        .tree-edge {
+            position: absolute;
+            background: var(--accent-color);
+            height: 2px;
+            transform-origin: left center;
+            transition: all 0.5s ease;
+        }
+
+        .tree-edge.active {
+            background: var(--tertiary-accent);
+            box-shadow: 0 0 10px rgba(170, 0, 255, 0.5);
+            height: 3px;
+        }
+
+        .tree-edge.merge-complete {
+            background: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.5);
+            height: 3px;
+        }
+
+        .explanation {
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+
+        .explanation h2 {
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .step-display {
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .array-bar {
+                min-width: 20px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            input {
+                width: 100%;
+            }
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .speed-slider {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 8px;
+            background: var(--container-bg);
+            border-radius: 5px;
+            outline: none;
+            border: 1px solid var(--accent-color);
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .speed-slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .speed-slider::-moz-range-thumb:hover {
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <header>
+        <h1>Merge Sort Visualization</h1>
+        <p class="subtitle">Divide & Conquer Algorithm with Binary Tree Representation</p>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="array-input" placeholder="Enter numbers (e.g., 8,3,5,4,7,6,1,2)" value="8,3,5,4,7,6,1,2">
+            <button id="generate-btn">Generate Random Array</button>
+            <button id="start-btn">Start Sorting</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <div class="speed-control">
+            <span>Speed:</span>
+            <input type="range" min="1" max="10" value="5" class="speed-slider" id="speed-slider">
+            <span id="speed-value">5x</span>
+        </div>
+
+        <div class="visualization-container">
+            <div class="array-container" id="array-visualization"></div>
+            
+            <div class="tree-container">
+                <div id="tree-visualization"></div>
+            </div>
+            
+            <div class="step-display">
+                <div class="step-title">Current Step:</div>
+                <div class="step-description" id="step-description">
+                    Click "Start Sorting" to begin the merge sort visualization.
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h2>How Merge Sort Works</h2>
+            <p>Merge Sort is a divide and conquer algorithm that:</p>
+            <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                <li>Divides the input array into two halves</li>
+                <li>Recursively sorts the two halves</li>
+                <li>Merges the sorted halves to produce the final sorted array</li>
+            </ol>
+            <p style="margin-top: 1rem;">The binary tree visualization shows how the array is divided into smaller subarrays until each subarray contains only one element (which is inherently sorted). Then, the subarrays are merged back together in a sorted manner.</p>
+            <p style="margin-top: 0.5rem;">Time Complexity: O(n log n) - making it efficient for large datasets.</p>
+        </div>
+    </div>
+
+    <script>
+        const arrayInput = document.getElementById('array-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const arrayVisualization = document.getElementById('array-visualization');
+        const treeVisualization = document.getElementById('tree-visualization');
+        const stepDescription = document.getElementById('step-description');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+
+        let array = [8, 3, 5, 4, 7, 6, 1, 2];
+        let animationSpeed = 1000 / parseInt(speedSlider.value);
+        let animationTimeout;
+        let isAnimating = false;
+        let treeNodes = [];
+        let treeEdges = [];
+        let animationQueue = [];
+        let activeNodes = [];
+        function init() {
+            updateSpeedDisplay();
+            renderArray(array);
+            createTreeStructure(array, 0, array.length - 1, null, 0);
+            renderTree();
+        }
+
+
+        generateBtn.addEventListener('click', generateRandomArray);
+        startBtn.addEventListener('click', startSorting);
+        resetBtn.addEventListener('click', resetVisualization);
+        arrayInput.addEventListener('change', updateArrayFromInput);
+        speedSlider.addEventListener('input', () => {
+            animationSpeed = 1000 / parseInt(speedSlider.value);
+            updateSpeedDisplay();
+        });
+
+        function updateSpeedDisplay() {
+            speedValue.textContent = `${speedSlider.value}x`;
+        }
+
+        function updateArrayFromInput() {
+            const inputValue = arrayInput.value.trim();
+            if (inputValue) {
+                const newArray = inputValue.split(',').map(num => parseInt(num.trim()));
+                if (newArray.some(isNaN)) {
+                    alert('Please enter valid numbers separated by commas');
+                    return;
+                }
+                if (newArray.length < 2) {
+                    alert('Please enter at least 2 numbers');
+                    return;
+                }
+                if (newArray.length > 16) {
+                    alert('Please enter at most 16 numbers for better visualization');
+                    return;
+                }
+                array = newArray;
+                resetVisualization();
+            }
+        }
+
+        function generateRandomArray() {
+            const size = Math.floor(Math.random() * 9) + 4; // 4 to 12 elements
+            array = Array.from({length: size}, () => Math.floor(Math.random() * 50) + 1);
+            arrayInput.value = array.join(',');
+            resetVisualization();
+        }
+
+        function resetVisualization() {
+            clearTimeout(animationTimeout);
+            isAnimating = false;
+            animationQueue = [];
+            activeNodes = [];
+            
+            startBtn.disabled = false;
+            startBtn.textContent = "Start Sorting";
+            
+            // Clear visualizations
+            arrayVisualization.innerHTML = '';
+            treeVisualization.innerHTML = '';
+            
+            // Reset data structures
+            treeNodes = [];
+            treeEdges = [];
+            
+            // Re-render initial state
+            renderArray(array);
+            createTreeStructure(array, 0, array.length - 1, null, 0);
+            renderTree();
+            
+            stepDescription.textContent = "Click \"Start Sorting\" to begin the merge sort visualization.";
+        }
+
+        function renderArray(arr, highlightIndices = []) {
+            arrayVisualization.innerHTML = '';
+            const maxValue = Math.max(...arr);
+            
+            arr.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                if (highlightIndices.includes(index)) {
+                    bar.classList.add('highlight');
+                }
+                
+                const height = (value / maxValue) * 80 + 20; // 20px minimum height
+                bar.style.height = `${height}px`;
+                bar.textContent = value;
+                
+                arrayVisualization.appendChild(bar);
+            });
+        }
+
+        function createTreeStructure(arr, start, end, parentId, level) {
+            if (start > end) return null;
+            
+            const mid = Math.floor((start + end) / 2);
+            const nodeId = `node-${level}-${start}-${end}`;
+            const nodeValues = arr.slice(start, end + 1);
+            
+            // Create node
+            treeNodes.push({
+                id: nodeId,
+                values: nodeValues,
+                level: level,
+                start: start,
+                end: end,
+                mid: mid,
+                x: 0, // Will be calculated during rendering
+                y: level * 80 + 20
+            });
+            
+            // Create edge to parent
+            if (parentId) {
+                treeEdges.push({
+                    from: parentId,
+                    to: nodeId
+                });
+            }
+            
+            // Create children
+            if (start < end) {
+                createTreeStructure(arr, start, mid, nodeId, level + 1);
+                createTreeStructure(arr, mid + 1, end, nodeId, level + 1);
+            }
+            
+            return nodeId;
+        }
+
+        function renderTree() {
+            treeVisualization.innerHTML = '';
+            
+            // Calculate x positions based on tree structure
+            const levelWidths = {};
+            const levelNodes = {};
+            
+            // Group nodes by level
+            treeNodes.forEach(node => {
+                if (!levelNodes[node.level]) {
+                    levelNodes[node.level] = [];
+                }
+                levelNodes[node.level].push(node);
+            });
+            
+            // Calculate width for each level
+            const maxLevel = Math.max(...Object.keys(levelNodes).map(Number));
+            const containerWidth = treeVisualization.clientWidth;
+            
+            // Set x positions
+            for (let level = 0; level <= maxLevel; level++) {
+                const nodesAtLevel = levelNodes[level];
+                const spacing = containerWidth / (nodesAtLevel.length + 1);
+                
+                nodesAtLevel.forEach((node, index) => {
+                    node.x = spacing * (index + 1);
+                });
+            }
+            
+            // Render edges first (so they appear behind nodes)
+            treeEdges.forEach(edge => {
+                const fromNode = treeNodes.find(node => node.id === edge.from);
+                const toNode = treeNodes.find(node => node.id === edge.to);
+                
+                if (fromNode && toNode) {
+                    const edgeElement = document.createElement('div');
+                    edgeElement.className = 'tree-edge';
+                    edgeElement.id = `edge-${fromNode.id}-${toNode.id}`;
+                    
+                    // Calculate edge position and rotation
+                    const dx = toNode.x - fromNode.x;
+                    const dy = toNode.y - fromNode.y;
+                    const length = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    edgeElement.style.width = `${length}px`;
+                    edgeElement.style.left = `${fromNode.x}px`;
+                    edgeElement.style.top = `${fromNode.y + 20}px`;
+                    edgeElement.style.transform = `rotate(${angle}deg)`;
+                    
+                    treeVisualization.appendChild(edgeElement);
+                }
+            });
+            
+            // Render nodes
+            treeNodes.forEach(node => {
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'tree-node';
+                nodeElement.id = node.id;
+                nodeElement.textContent = node.values.join(', ');
+                
+                nodeElement.style.left = `${node.x - 40}px`;
+                nodeElement.style.top = `${node.y}px`;
+                
+                // Apply active class if this node is in the activeNodes array
+                if (activeNodes.includes(node.id)) {
+                    nodeElement.classList.add('active');
+                }
+                
+                treeVisualization.appendChild(nodeElement);
+            });
+        }
+
+        async function startSorting() {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            startBtn.disabled = true;
+            startBtn.textContent = "Sorting...";
+            
+            // Create a copy of the array for sorting
+            const arrayCopy = [...array];
+            
+            // Generate all the steps for the animation
+            animationQueue = [];
+            await mergeSort(arrayCopy, 0, arrayCopy.length - 1);
+            
+            // Start the animation
+            runAnimationQueue();
+        }
+
+        async function mergeSort(arr, start, end) {
+            // Base case: array of length 1 is already sorted
+            if (start >= end) return;
+            
+            const mid = Math.floor((start + end) / 2);
+            const nodeId = findNodeId(start, end);
+            
+            // Highlight current node
+            animationQueue.push({
+                type: 'highlightNode',
+                nodeId: nodeId,
+                description: `Dividing array [${arr.slice(start, end + 1).join(', ')}] at index ${mid}`
+            });
+            
+            // Recursively sort left half
+            await mergeSort(arr, start, mid);
+            
+            // Recursively sort right half
+            await mergeSort(arr, mid + 1, end);
+            
+            // Merge the sorted halves
+            await merge(arr, start, mid, end);
+            
+            // Update the node with sorted values
+            animationQueue.push({
+                type: 'updateNode',
+                nodeId: nodeId,
+                values: arr.slice(start, end + 1),
+                description: `Merged subarrays into [${arr.slice(start, end + 1).join(', ')}]`
+            });
+            
+            // Mark this node as merge complete
+            animationQueue.push({
+                type: 'markMergeComplete',
+                nodeId: nodeId
+            });
+        }
+
+        async function merge(arr, start, mid, end) {
+            const leftArray = arr.slice(start, mid + 1);
+            const rightArray = arr.slice(mid + 1, end + 1);
+            
+            animationQueue.push({
+                type: 'description',
+                description: `Merging left [${leftArray.join(', ')}] and right [${rightArray.join(', ')}]`
+            });
+            
+            let i = 0, j = 0, k = start;
+            const highlightIndices = [];
+            
+            while (i < leftArray.length && j < rightArray.length) {
+                highlightIndices.length = 0;
+                highlightIndices.push(k);
+                
+                if (leftArray[i] <= rightArray[j]) {
+                    arr[k] = leftArray[i];
+                    i++;
+                } else {
+                    arr[k] = rightArray[j];
+                    j++;
+                }
+                
+                animationQueue.push({
+                    type: 'updateArray',
+                    array: [...arr],
+                    highlightIndices: [...highlightIndices],
+                    description: `Placing ${arr[k]} at position ${k}`
+                });
+                
+                k++;
+            }
+            
+            // Copy remaining elements
+            while (i < leftArray.length) {
+                highlightIndices.length = 0;
+                highlightIndices.push(k);
+                arr[k] = leftArray[i];
+                
+                animationQueue.push({
+                    type: 'updateArray',
+                    array: [...arr],
+                    highlightIndices: [...highlightIndices],
+                    description: `Placing remaining left element ${arr[k]} at position ${k}`
+                });
+                
+                i++;
+                k++;
+            }
+            
+            while (j < rightArray.length) {
+                highlightIndices.length = 0;
+                highlightIndices.push(k);
+                arr[k] = rightArray[j];
+                
+                animationQueue.push({
+                    type: 'updateArray',
+                    array: [...arr],
+                    highlightIndices: [...highlightIndices],
+                    description: `Placing remaining right element ${arr[k]} at position ${k}`
+                });
+                
+                j++;
+                k++;
+            }
+            
+            return arr;
+        }
+
+        function findNodeId(start, end) {
+            const node = treeNodes.find(node => node.start === start && node.end === end);
+            return node ? node.id : null;
+        }
+
+        function runAnimationQueue() {
+            if (animationQueue.length === 0) {
+                isAnimating = false;
+                startBtn.disabled = false;
+                startBtn.textContent = "Start Sorting";
+                stepDescription.textContent = "Sorting complete! The array is now sorted.";
+                return;
+            }
+            
+            const step = animationQueue.shift();
+            
+            switch (step.type) {
+                case 'highlightNode':
+                    // Add this node to the active nodes
+                    activeNodes.push(step.nodeId);
+                    renderTree();
+                    break;
+                    
+                case 'updateNode':
+                    // Update the node's values in the treeNodes array
+                    const nodeIndex = treeNodes.findIndex(node => node.id === step.nodeId);
+                    if (nodeIndex !== -1) {
+                        treeNodes[nodeIndex].values = step.values;
+                    }
+                    renderTree();
+                    break;
+                    
+                case 'markMergeComplete':
+                    // Remove this node from activeNodes and add to merge complete
+                    const activeIndex = activeNodes.indexOf(step.nodeId);
+                    if (activeIndex !== -1) {
+                        activeNodes.splice(activeIndex, 1);
+                    }
+                    
+                    // Add merge-complete class to the node
+                    const node = document.getElementById(step.nodeId);
+                    if (node) {
+                        node.classList.remove('active');
+                        node.classList.add('merge-complete');
+                        
+                        // Also mark edges to this node as complete
+                        treeEdges.forEach(edge => {
+                            if (edge.to === step.nodeId) {
+                                const edgeElement = document.getElementById(`edge-${edge.from}-${edge.to}`);
+                                if (edgeElement) {
+                                    edgeElement.classList.remove('active');
+                                    edgeElement.classList.add('merge-complete');
+                                }
+                            }
+                        });
+                    }
+                    break;
+                    
+                case 'updateArray':
+                    renderArray(step.array, step.highlightIndices);
+                    break;
+                    
+                case 'description':
+                    // Only update description
+                    break;
+            }
+            
+            // Update step description
+            if (step.description) {
+                stepDescription.textContent = step.description;
+            }
+            
+            // Schedule next animation
+            animationTimeout = setTimeout(() => {
+                runAnimationQueue();
+            }, animationSpeed);
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+        window.addEventListener('resize', renderTree);
+    </script>
+</body>
+</html>
