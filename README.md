@@ -1,1 +1,1 @@
-This is merge sort Sim
+This is merge sort Simulation
